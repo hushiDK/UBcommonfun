@@ -1,0 +1,130 @@
+dim mdata= File.Read("C:\\Users\\Mr_xiaohaige\\Desktop\\执行局数据表\\待处理文档.txt","utf-8")
+
+dim test=["序号","法院\r\n（含管辖）","首次执行案件","","","","","","","","","","","","恢复执行案件","","","其他","",""]
+
+
+
+/**
+* 查找字符串在字符串的位置 没有找到返回-1
+* @param string,string
+* @return in 
+**/ 
+function findInfoFromArray(find,dataArray)
+    for i=0 to Len(dataArray)
+        if find=dataArray[i]
+            return i
+        end if
+    next
+    return -1
+end function
+
+/**
+* 表格内容转数组
+* @param string
+* @return array
+**/ 
+function table2arr(data)
+    dim temp=Regex.FindAll(data,"\\[(.*?)\\],")
+    dim arr=[]
+    for i=0 to Len(temp)
+       push(arr,str2arr(temp[i]))
+    next
+    return arr
+end function
+
+/**
+* 表格内容转数组
+* @exam '"1","临汾尧都法院","73.11","54.91","26.89","20.19","24.89","10.64","16.22","37.61","87.48","97.42","67.53","0.02","54.09","183.22","23.03","34.55","100","100"'
+* @param string
+* @return array
+**/ 
+function str2arr(data)
+    dim starr=[]
+    dim temps=Split(data,',')
+    for i=0 to Len(temps)
+        // stripWhiteSpace(temps[i])
+        push(starr,temps[i])
+    next
+    return starr
+end function
+
+/**
+* 删除字符串中的空白
+**/ 
+function stripWhiteSpace(data)
+    TracePrint(data)
+end function
+
+/**
+* 递归处理字符串 修改表头
+* @exam ["序号","法院\r\n（含管辖）","首次执行案件","","","","","","","","","","","","恢复执行案件","","","其他","",""]
+* @return ["序号","法院\r\n（含管辖）","首次执行案件","首次执行案件","首次执行案件","首次执行案件","首次执行案件","首次执行案件","首次执行案件","首次执行案件","首次执行案件","首次执行案件","首次执行案件","首次执行案件","恢复执行案件","恢复执行案件","恢复执行案件","其他","其他","其他"]
+**/ 
+function repalceSpaceInArr(test)
+    dim res=findInfoFromArray("",test)
+    if res>0
+        test[res]=test[res-1]
+        repalceSpaceInArr(test)
+    end if
+    return test
+end function
+
+/**
+*  补充数组长度 长度不足 给数组前+空格
+* @param array table
+* @param int need len
+* @return array
+**/ 
+function addArrLen(table,needlen)
+    if Len(table)<needlen
+        unshift(table,"")
+        addArrLen(table,needlen)
+    end if
+    return table
+end function
+
+/** 
+* 修复表结构
+* @param table arr 表数据
+* @param tw int 表长度
+* @param th int 表高度
+* @param tt int 表头占行
+**/ 
+function fixFromTable(table,tw,th,tt)
+    for i=0 to tt-1
+        table[i]=repalceSpaceInArr(table[i])
+        table[i]=addArrLen(table[i],tw)
+    next
+    return table
+end function
+
+dim table=JSON.parse(mdata)
+dim tw=20
+dim th=20
+dim tt=2
+
+
+/** 
+* 获取array数据
+* @param table arr 表数据
+* @param tw int 表长度
+* @param th int 表高度
+* @param tt int 表头占行
+* @param startrow int 第几行开始获取
+* @param startcol int 第几列开始获取
+**/ 
+table=fixFromTable(table,tw,th,tt)
+
+function getJsonDataFromTable(table,tw,th,tt,startrow,startcol)
+    For i=startrow-1 to th-startrow+1
+        for j=startcol-1 to tw-startcol+1
+            dim hd=table[i][j]
+            dim df=[table[0][j],table[1][j],table[i][0],table[i][1],table[i][j]]
+            TracePrint(df)
+        next
+    Next
+end function
+dim startrow=4
+dim startcol=3
+getJsonDataFromTable(table,tw,th,tt,startrow,startcol)
+
