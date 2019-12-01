@@ -113,4 +113,15 @@ function getJsonDataFromTable(table,tw,th,tt,startrow,startcol)
     Next
 end function
 
-
+/*
+* bool 转换未str
+* author hushi
+* @param  bool bool
+* @return str
+*/ 
+function boo2str(bool)
+    if bool=true
+        return 'true'
+    end if
+    return 'false'
+end function
