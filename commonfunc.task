@@ -125,3 +125,5 @@ function boo2str(bool)
     end if
     return 'false'
 end function
+
+test
